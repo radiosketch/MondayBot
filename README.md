@@ -18,3 +18,6 @@ Run the bot:
 ```
 $ python3 bot.py
 ```
+
+Documentation:
+- https://discordpy.readthedocs.io/en/v1.7.3/index.html
