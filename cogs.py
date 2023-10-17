@@ -65,6 +65,10 @@ class Mondays(commands.Cog):
         embed.set_image(url='attachment://output.jpg')
         await ctx.send(file=File('output.jpg'), embed=embed)
 
+    @info.error
+    async def info_error(ctx, error):
+        await ctx.send(error)
+        
     @tasks.loop(minutes=30)
     async def check_date(self):
         now = utils.datetime.now()
