@@ -14,6 +14,17 @@ def rename_log():
 def parse_log_name(filename):
     return parser.parse(filename.replace('-', ':')[:-4])
 
+def get_newest_log():
+    newest_log = 'January 1st 1970.log'
+    for dirname, _, filenames in os.walk('logs'):
+        for file in filenames:
+            if file == 'recent.log':
+                return file
+            if parse_log_name(newest_log) < parse_log_name(file):
+                newest_log = file
+        return os.path.join(dirname, newest_log)
+
+
 LOGGER = logging.getLogger('discord')
 LOGGER.setLevel(logging.DEBUG)
 formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)-8s] %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
@@ -67,14 +78,14 @@ class Developer(commands.Cog):
         '''
         Posts the log file in chat
         '''
-        await ctx.send(file=File('logs/recent.log'))
+        await ctx.send(file=File(get_newest_log()))
 
     @tasks.loop(hours=8)
     async def check_log_size(self):
         self.logger.info('Renaming old log file...')
         rename_log()
         self.logger.info('Calculating log folder usage...')
-        MAX_FOLDER_MEMORY = .1 * 10**6
+        MAX_FOLDER_MEMORY = .75 * 10**6
         cur_memory = 0
         for dirpath, _, filenames in os.walk('logs'):
             for file in filenames:
