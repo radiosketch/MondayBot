@@ -5,24 +5,26 @@ import subprocess
 
 from discord import Game, File
 from discord.ext import commands, tasks
-from utils import get_token, datetime
+from utils import get_token, datetime, parser
 
-if os.path.exists('logs/output.log'):
-    os.rename('logs/output.log', f'logs/{str(datetime.now()).replace(":", "")}.log')
+def rename_log():
+    if os.path.exists('logs/recent.log'):
+        os.rename('logs/recent.log', f'logs/{str(datetime.now()).replace(":", "-")}.log')
+
+def parse_log_name(filename):
+    return parser.parse(filename.replace('-', ':')[:-4])
 
 LOGGER = logging.getLogger('discord')
-LOGGER.setLevel(logging.INFO)
+LOGGER.setLevel(logging.DEBUG)
 formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)-8s] %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
 screen_handler = logging.StreamHandler(stream=sys.stdout)
 screen_handler.setFormatter(formatter)
 LOGGER.addHandler(screen_handler)
-file_handler = logging.FileHandler(f'logs/output.log')
+file_handler = logging.FileHandler(f'logs/recent.log')
 file_handler.setFormatter(formatter)
 LOGGER.addHandler(file_handler)
 LOGGER.removeHandler(LOGGER.handlers[0])
 LOGGER.propagate = False
-
-TOKEN = get_token()
 
 BOT = commands.Bot(command_prefix="!")
 
@@ -57,6 +59,7 @@ class Developer(commands.Cog):
         self.bot.reload_extension('cogs')
         self.logger.info('Done reloading.')
         await ctx.message.add_reaction('👍')
+        await ctx.send(f'```{result}```')
 
     @commands.command()
     @commands.check(is_developer)
@@ -64,29 +67,47 @@ class Developer(commands.Cog):
         '''
         Posts the log file in chat
         '''
-        await ctx.send(file=File('logs/output.log'))
+        await ctx.send(file=File('logs/recent.log'))
 
     @tasks.loop(hours=8)
     async def check_log_size(self):
-        self.logger.info('Checking log size...')
-        MAX_FOLDER_MEMORY = .1 * 10**7
+        self.logger.info('Renaming old log file...')
+        rename_log()
+        self.logger.info('Calculating log folder usage...')
+        MAX_FOLDER_MEMORY = .1 * 10**6
         cur_memory = 0
         for dirpath, _, filenames in os.walk('logs'):
             for file in filenames:
-                cur_memory += os.stat(file).st_size
+                self.logger.info(f'Checking {file}')
+                cur_memory += os.stat(os.path.join(dirpath, file)).st_size
         percent_usage = (cur_memory / MAX_FOLDER_MEMORY) * 100
         self.logger.info(f'Using {percent_usage}% of log folder memory')
-        if percent_usage > 90:
+        if percent_usage > 80:
             self.logger.info('Clearing space for more recent log files...')
+            oldest_log = 'January 1st 3000.log'
             for dirpath, _, filenames in os.walk('logs'):
                 for file in filenames:
-                    self.logger.info(f'Removing {file}...')
-                    os.remove(os.path.join(dirpath, file))
+                    if file == 'recent.log':
+                        continue
+                    log_date = parse_log_name(file)
+                    if log_date < parse_log_name(oldest_log):
+                        oldest_log = file
+                self.logger.info(f'Removing {oldest_log}...')
+                os.remove(os.path.join(dirpath, oldest_log))
             self.logger.info('Done.')
         
     @check_log_size.before_loop
     async def before_check_log_size(self):
         await self.bot.wait_until_ready()
+
+    @commands.command()
+    @commands.check(is_developer)
+    async def reboot(self, ctx):
+        '''
+        Reboots the host server
+        '''
+        await ctx.send('Rebooting... this may take a couple minutes')
+        os.system('reboot')
 
 @BOT.event
 async def on_ready():
@@ -98,7 +119,8 @@ async def on_ready():
             if mondays:
                 await mondays.set_general(channel)
 
-BOT.add_cog(Developer(BOT, LOGGER))
-BOT.load_extension('cogs')
-
-BOT.run(TOKEN)
+if __name__ == '__main__':
+    BOT.add_cog(Developer(BOT, LOGGER))
+    BOT.load_extension('cogs')
+    BOT.run(get_token())
+    
