@@ -58,25 +58,16 @@ class Mondays(commands.Cog):
         real_monday, days_to_real_monday = utils.generate_next_real_monday()
         # joke_monday, nth_joke_monday = utils.generate_next_joke_monday()
         super_monday = utils.generate_next_super_monday()
-        embed = Embed(
-            color=Color.from_rgb(104, 237, 198),
-        )
         save_garf(f'''{"It's Monday!" if utils.is_real_monday() else f"The next Monday is {real_monday.strftime('%m/%d/%Y')}, in {utils.plural_days(days_to_real_monday)}, "}\n{"and it's also a Super Monday!" if utils.is_super_monday() else f"and the next Super Monday is {super_monday.strftime('%m/%d/%Y')}, in {(super_monday - utils.get_now()).days} days"}\n''', align='left')
-        embed.set_image(url='attachment://output.jpg')
-        await ctx.send(file=File('output.jpg'), embed=embed)
-
-    @info.error
-    async def info_error(ctx, error):
-        await ctx.send(error)
+        await ctx.send(file=File('output.jpg'))
         
     @tasks.loop(minutes=30)
     async def check_date(self):
         now = utils.datetime.now()
+        self.logger.info(f'The current time is {now.time()}')
         if now.hour != 7 or not now.minute > 30:
             # Return if the time is not 7:30am - 7:59am
-            if self.just_started:
-                self.logger.info('Waiting for 7:30am...')
-            self.just_started = False
+            self.logger.info('Waiting for 7:30am...')
             return
         is_real_monday = utils.is_real_monday()
         self.logger.info(f'Today {"is" if is_real_monday else "is not"} a real Monday')
