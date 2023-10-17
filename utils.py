@@ -56,7 +56,7 @@ def generate_next_real_monday(from_date=None):
     if from_date == None:
         from_date = get_now()
     one_day = timedelta(days=1)
-    for i in range(6):
+    for i in range(7):
         if is_monday(from_date):
             logger.debug(f'The next real Monday (in {i} days) is {from_date}')
             return from_date, i
