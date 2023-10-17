@@ -1,6 +1,10 @@
+# TEMP IMPORT
+import os
+# TEMP IMPORT
 import logging
 import utils
 from garfutils import save_garf
+from bot import is_developer
 from discord import Embed, Color, File
 from discord.ext import commands, tasks
 
@@ -16,6 +20,12 @@ class Base(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         await ctx.send('Pong!')
+
+    @commands.command()
+    @commands.check(is_developer)
+    async def reboot(self, ctx):
+        '''TODO MOVE THIS TO DEVELOPER COG'''
+        os.system('reboot')
 
 
 class Mondays(commands.Cog):
