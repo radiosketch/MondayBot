@@ -33,6 +33,7 @@ class Developer(commands.Cog):
     def __init__(self, bot: commands.Bot, logger):
         self.bot = bot
         self.logger = logger
+        self.check_log_size.start()
         self.logger.info('Developer Cog is initialized')
 
     @commands.command()
@@ -65,7 +66,7 @@ class Developer(commands.Cog):
         '''
         await ctx.send(file=File('logs/output.log'))
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(hours=8)
     async def check_log_size(self):
         self.logger.info('Checking log size...')
         MAX_FOLDER_MEMORY = .1 * 10**7
@@ -85,7 +86,6 @@ class Developer(commands.Cog):
         
     @check_log_size.before_loop
     async def before_check_log_size(self):
-        self.logger.info('Waiting to start loop...')
         await self.bot.wait_until_ready()
 
 @BOT.event
