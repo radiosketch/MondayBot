@@ -8,7 +8,7 @@ from cryptography.fernet import Fernet
 from datetime import datetime, timedelta
 from dateutil import parser
 
-# TODO Consider making a get_logger method
+
 LOGGER = logging.getLogger('discord')
 LOGGER.setLevel(logging.DEBUG)
 formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)-8s] %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
@@ -43,9 +43,9 @@ def get_log(oldest=False):
     LOGGER.info(f'Starting the search at {search_log}')
     for dirname, _, filenames in os.walk('logs'):
         for file in filenames:
+            if file == 'recent.log':
+                continue
             LOGGER.info(f'Comparing {search_log} and {file}')
-            if not oldest and file == 'recent.log':
-                return file
             search_log_date = parse_log_name(search_log)
             file_date = parse_log_name(file)
             if oldest and search_log_date > file_date:
@@ -75,20 +75,47 @@ def get_now():
     return trim_date(datetime.now())
 
 def ordinal(n):
-    last_digit = int(str(n)[-1])
-    if last_digit == 1:
-        return str(n) + 'st'
-    if last_digit == 2:
-        return str(n) + 'nd'
-    if last_digit == 3:
-        return str(n) + 'rd'
-    if last_digit >= 4:
+    if n in [11, 12, 13]:
         return str(n) + 'th'
-    if last_digit == 0:
-        return str(n) + 'th'
+    return str(n) + ['th', 'st', 'nd', 'rd', 'th'][min(4, n % 10)]
 
 def plural_days(n):
     return f'{n} day' if n == 1 else f'{n} days'
+
+def whitelist_exists(ctx):
+    LOGGER.info('Checking for whitelist.txt')
+    if not os.path.exists('whitelist.txt'):
+        LOGGER.info('whitelist.txt does not exist, creating...')
+        with open('whitelist.txt', 'x') as f:
+            pass
+    return True
+
+def get_developers():
+    with open('whitelist.txt', 'r') as f:
+        devs = [line[:-1] for line in f.readlines()]
+        LOGGER.info(f'Current developers: {devs}')
+        return devs
+
+def add_developer(username):
+    with open('whitelist.txt', 'a') as f:
+        f.write(f'{username}\n')
+    LOGGER.info(f'After adding {username}: {get_developers()}')
+
+def remove_developer(username):
+    developers = get_developers()
+    os.remove('whitelist.txt')
+    whitelist_exists(None)
+    for dev in developers:
+        if dev != username:
+            add_developer(dev)
+    LOGGER.info(f'After deleting {username}: {get_developers()}')
+
+def is_developer(ctx):
+    devs = get_developers()
+    return ctx.message.author.name in devs
+
+def is_owner(ctx):
+    return ctx.message.author.name == '101prairiedogs'
 
 def is_monday(date):
     return date.weekday() == 0
