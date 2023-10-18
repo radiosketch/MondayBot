@@ -4,7 +4,7 @@ Versions:
 - Check `requirements.txt` for module versions
 ```
 $ python3 --version
-3.7.3
+3.11.2
 ```
 
 Package installation:
