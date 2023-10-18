@@ -109,7 +109,7 @@ class Developer(commands.Cog):
         self.logger.info(f'Executing {command}')
         try:
             result = str(subprocess.check_output(command, stderr=subprocess.STDOUT), encoding='utf-8')
-            self.logger.info(f'\n# bash\n{result}')
+            self.logger.info(f'\n$ bash\n{result}')
             await ctx.send(f'```bash\n$ bash\n{result}```')
         except Exception as e:
             self.logger.error(e)
