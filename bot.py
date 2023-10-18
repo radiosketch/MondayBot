@@ -84,7 +84,6 @@ class Developer(commands.Cog):
         result = str(subprocess.check_output(['cat', 'whitelist.txt'], stderr=subprocess.STDOUT), encoding='utf-8')
         self.logger.info(f'\n# whitelist.txt\n{result}')
         await ctx.send(f'```py\n# whitelist.txt\n{result}```')
-    
 
     
     @commands.command()
@@ -98,6 +97,23 @@ class Developer(commands.Cog):
         result = str(subprocess.check_output(['cat', 'whitelist.txt'], stderr=subprocess.STDOUT), encoding='utf-8')
         self.logger.info(f'\n# whitelist.txt\n{result}')
         await ctx.send(f'```py\n# whitelist.txt\n{result}```')
+
+
+    @commands.command()
+    @commands.check(is_owner)
+    async def bash(self, ctx):
+        '''
+        Access the host terminal
+        '''
+        command = ctx.message.content[6:].split(' ')
+        self.logger.info(f'Executing {command}')
+        try:
+            result = str(subprocess.check_output(command, stderr=subprocess.STDOUT), encoding='utf-8')
+            self.logger.info(f'\n# bash\n{result}')
+            await ctx.send(f'```bash\n$ bash\n{result}```')
+        except Exception as e:
+            self.logger.error(e)
+            await ctx.send(f'```bash\n$ bash\n{error}```')
 
 
 if __name__ == '__main__':
