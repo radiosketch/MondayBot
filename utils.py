@@ -1,3 +1,5 @@
+import os
+import sys
 import logging
 
 import base64
@@ -6,12 +8,62 @@ from cryptography.fernet import Fernet
 from datetime import datetime, timedelta
 from dateutil import parser
 
+# TODO Consider making a get_logger method
+LOGGER = logging.getLogger('discord')
+LOGGER.setLevel(logging.DEBUG)
+formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)-8s] %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
+screen_handler = logging.StreamHandler(stream=sys.stdout)
+screen_handler.setFormatter(formatter)
+LOGGER.addHandler(screen_handler)
+file_handler = logging.FileHandler(f'logs/recent.log')
+file_handler.setFormatter(formatter)
+LOGGER.addHandler(file_handler)
+LOGGER.removeHandler(LOGGER.handlers[0])
+LOGGER.propagate = False
 
-logging.basicConfig()
-logger = logging.getLogger('utils')
-logger.setLevel(logging.DEBUG)
-logger.disabled = True
+def rename_log():
+    recent = 'logs/recent.log'
+    if os.path.exists(recent):
+        new_name = f'logs/{str(datetime.now()).replace(":", "-")}.log'
+        try:
+            os.rename(recent, new_name)
+            LOGGER.info(f'Renamed {recent} to {new_name}')
+        except Exception as e:
+            LOGGER.error(e)
+        
+    
+def parse_log_name(filename):
+    return parser.parse(filename.replace('-', ':')[:-4])
 
+def get_log(oldest=False):
+    '''
+    Get the newest (default) or oldest file in the log folder
+    '''
+    search_log = 'January 1st 3000.log' if oldest else 'January 1st 1970.log'
+    LOGGER.info(f'Starting the search at {search_log}')
+    for dirname, _, filenames in os.walk('logs'):
+        for file in filenames:
+            LOGGER.info(f'Comparing {search_log} and {file}')
+            if not oldest and file == 'recent.log':
+                return file
+            search_log_date = parse_log_name(search_log)
+            file_date = parse_log_name(file)
+            if oldest and search_log_date > file_date:
+                search_log = file
+            elif search_log_date < file_date:
+                search_log = file
+        return os.path.join(dirname, search_log)
+
+def get_log_folder_memory_usage(max_mem=.75 * 10**6):
+    cur_mem = 0
+    for dirpath, _, filenames in os.walk('logs'):
+        for file in filenames:
+            LOGGER.info(f'Checking {file}')
+            cur_mem += os.stat(os.path.join(dirpath, file)).st_size
+    return (cur_mem / max_mem) * 100
+
+def delete_oldest_log():
+    os.remove(get_log(oldest=True))
 
 def get_token():
     return base64.b64decode(Fernet(open('key.txt', 'rb').read()).decrypt(open('encoded.txt', 'rb').read())).decode()
@@ -58,7 +110,7 @@ def generate_next_real_monday(from_date=None):
     one_day = timedelta(days=1)
     for i in range(7):
         if is_monday(from_date):
-            logger.debug(f'The next real Monday (in {i} days) is {from_date}')
+            LOGGER.debug(f'The next real Monday (in {i} days) is {from_date}')
             return from_date, i
         from_date += one_day
 
@@ -71,7 +123,7 @@ def generate_next_super_monday(from_date=None, joke_interval=57):
         joke_monday, i = generate_next_joke_monday(end_date=from_date)
         monday = is_monday(joke_monday)
         from_date += joke_timedelta
-    logger.debug(f'The next super Monday (the {ordinal(i)} joke monday, and the {ordinal((joke_monday - parser.parse("July 22nd, 2017")).days)} day since server creation) is {joke_monday}')
+    LOGGER.debug(f'The next super Monday (the {ordinal(i)} joke monday, and the {ordinal((joke_monday - parser.parse("July 22nd, 2017")).days)} day since server creation) is {joke_monday}')
     return joke_monday
 
 def is_joke_monday(day=None):
