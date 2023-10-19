@@ -17,6 +17,7 @@ class Developer(commands.Cog):
     @commands.check(is_owner)
     async def stop(self, ctx):
         '''
+        Owner only
         Stops the bot
         '''
         await ctx.message.add_reaction('👍')
@@ -64,7 +65,7 @@ class Developer(commands.Cog):
         await self.bot.wait_until_ready()
 
     @commands.command()
-    @commands.check(is_owner)
+    @commands.check(is_developer)
     async def reboot(self, ctx):
         '''
         Reboots the host server
@@ -77,6 +78,9 @@ class Developer(commands.Cog):
     @commands.check(is_owner)
     @commands.check(whitelist_exists)
     async def whitelist(self, ctx):
+        '''
+        Owner Only
+        ''' 
         new_username = ctx.message.content[11:]
         if new_username != '':
             add_developer(new_username)
@@ -90,6 +94,9 @@ class Developer(commands.Cog):
     @commands.check(is_owner)
     @commands.check(whitelist_exists)
     async def unwhitelist(self, ctx):
+        '''
+        Owner Only
+        '''
         username = ctx.message.content[13:]
         if username != '':
             remove_developer(username)
@@ -100,7 +107,7 @@ class Developer(commands.Cog):
 
 
     @commands.command()
-    @commands.check(is_owner)
+    @commands.check(is_developer)
     async def bash(self, ctx):
         '''
         Access the host terminal
