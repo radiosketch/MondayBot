@@ -44,6 +44,7 @@ def get_log(oldest=False):
     for dirname, _, filenames in os.walk('logs'):
         for file in filenames:
             if file == 'recent.log':
+                rename_log()
                 continue
             LOGGER.info(f'Comparing {search_log} and {file}')
             search_log_date = parse_log_name(search_log)
