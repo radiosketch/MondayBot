@@ -24,7 +24,7 @@ LOGGER.propagate = False
 def rename_log():
     recent = 'logs/recent.log'
     if os.path.exists(recent):
-        new_name = f'logs/{str(datetime.now()).replace(":", "-")}.log'
+        new_name = f'logs/{str(datetime.now()).replace(":", "-").replace(" ", "")}.log'
         try:
             os.rename(recent, new_name)
             LOGGER.info(f'Renamed {recent} to {new_name}')
