@@ -1,0 +1,1 @@
+2 * * * * python3 /home/pi/MondayBot/post_monday.py

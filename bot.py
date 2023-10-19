@@ -113,12 +113,16 @@ class Developer(commands.Cog):
             await ctx.send(f'```bash\n$ bash\n{result}```')
         except Exception as e:
             self.logger.error(e)
-            await ctx.send(f'```bash\n$ bash\n{error}```')
+            await ctx.send(f'```bash\n$ bash\n{e}```')
+
+
+    def test():
+        LOGGER.info('CRONTAB RAN ME')
 
 
 if __name__ == '__main__':
     BOT = commands.Bot(command_prefix="!")
-
+    
     @BOT.event
     async def on_ready():
         LOGGER.info(msg=f'{BOT.user.name} is ready')
