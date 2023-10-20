@@ -1,2 +1,0 @@
-SHELL=/bin/bash
-* * * * * /home/pi/MondayBot/venv/bin/python /home/pi/MondayBot/post_monday.py &>> /home/pi/MondayBot/recent.log
