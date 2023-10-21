@@ -4,7 +4,7 @@ import subprocess
 
 from discord import Game, File
 from discord.ext import commands, tasks
-from utils import LOGGER, file_handler, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rename_log, get_log, get_log_folder_memory_usage, delete_oldest_log
+from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log
 
 
 class Developer(commands.Cog):
@@ -47,17 +47,7 @@ class Developer(commands.Cog):
 
     @tasks.loop(hours=8)
     async def check_log_size(self):
-        if not os.path.exists('logs/recent.log'):
-            self.logger.info('Creating new logfile')
-            os.system('touch logs/recent.log')
-            self.logger.info('Updating FileHandler')
-            self.logger.removeHandler(self.logger.handlers[1])
-            self.logger.addHandler(file_handler)
-            # LOGGER.removeHandler(LOGGER.handlers[0])
-        self.logger.info('Renaming old log file...')
-        # TODO Testing on Windows shows that the recent.log file is open, blocking renaming
-        # This issue doesn't seem to arise on Raspbian
-        rename_log()
+        rotate_log()
         self.logger.info('Calculating log folder usage...')
         percent_usage = get_log_folder_memory_usage()
         self.logger.info(f'Using {percent_usage}% of log folder memory')
@@ -129,10 +119,6 @@ class Developer(commands.Cog):
         except Exception as e:
             self.logger.error(e)
             await ctx.send(f'```bash\n$ bash\n{e}```')
-
-
-    def test():
-        LOGGER.info('CRONTAB RAN ME')
 
 
 if __name__ == '__main__':

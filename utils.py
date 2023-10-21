@@ -8,6 +8,8 @@ from cryptography.fernet import Fernet
 from datetime import datetime, timedelta
 from dateutil import parser
 
+new_filepath = 'logs/new.log'
+recent_filepath = 'logs/recent.log'
 
 LOGGER = logging.getLogger('discord')
 LOGGER.setLevel(logging.DEBUG)
@@ -15,21 +17,36 @@ formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)-8s] %(message)s', 
 screen_handler = logging.StreamHandler(stream=sys.stdout)
 screen_handler.setFormatter(formatter)
 LOGGER.addHandler(screen_handler)
-file_handler = logging.FileHandler(f'logs/recent.log')
+file_handler = logging.FileHandler(f'logs/created.log')
 file_handler.setFormatter(formatter)
 LOGGER.addHandler(file_handler)
 LOGGER.removeHandler(LOGGER.handlers[0])
 LOGGER.propagate = False
 
-def rename_log():
-    recent = 'logs/recent.log'
-    if os.path.exists(recent):
-        new_name = f'logs/{str(datetime.now()).replace(":", "-").replace(" ", "_")}.log'
-        try:
-            os.rename(recent, new_name)
-            LOGGER.info(f'Renamed {recent} to {new_name}')
-        except Exception as e:
-            LOGGER.error(e)
+def update_filehandler():
+    '''
+    Force the FileHandler to refocus onto recent_filepath
+    '''
+    LOGGER.removeHandler(LOGGER.handlers[1])
+    file_handler = logging.FileHandler(recent_filepath)
+    file_handler.setFormatter(formatter)
+    LOGGER.addHandler(file_handler)
+
+def rotate_log():
+    if os.path.exists(new_filepath):
+        # This is the first time rotate_log has run
+        # Not enough time has passed to log relevant info
+        os.rename(new_filepath, recent_filepath)
+        update_filehandler()
+        return
+
+    # Otherwise recent.log has existed since the last rotation
+    # Rename recent.log and replace it
+    dated_filepath = f'logs/{str(datetime.now()).replace(":", "-").replace(" ", "_")}.log'
+    os.rename(recent_filepath, dated_filepath)
+    LOGGER.info(f'Renamed {recent_filepath} to {dated_filepath}')
+    os.system(f'touch {recent_filepath}')
+    update_filehandler()
         
     
 def parse_log_name(filename):
@@ -39,21 +56,21 @@ def get_log(oldest=False):
     '''
     Get the newest (default) or oldest file in the log folder
     '''
-    search_log = 'January 1st 3000.log' if oldest else 'January 1st 1970.log'
-    LOGGER.info(f'Starting the search at {search_log}')
+    search_file = 'January 1st 3000.log' if oldest else 'January 1st 1970.log'
+    LOGGER.info(f'Starting the search at {search_file}')
     for dirname, _, filenames in os.walk('logs'):
         for file in filenames:
-            if file == 'recent.log':
-                rename_log()
-                continue
-            LOGGER.info(f'Comparing {search_log} and {file}')
-            search_log_date = parse_log_name(search_log)
+            filepath = os.path.join(dirname, file)
+            if filepath == recent_filepath or filepath == new_filepath:
+                if oldest:
+                    continue
+                return filepath
+            LOGGER.info(f'Comparing {search_file} and {file}')
+            search_file_date = parse_log_name(search_file)
             file_date = parse_log_name(file)
-            if oldest and search_log_date > file_date:
-                search_log = file
-            elif search_log_date < file_date:
-                search_log = file
-        return os.path.join(dirname, search_log)
+            if search_file_date > file_date:
+                search_file = file
+        return os.path.join(dirname, search_file)
 
 def get_log_folder_memory_usage(max_mem=.75 * 10**6):
     cur_mem = 0
@@ -112,8 +129,7 @@ def remove_developer(username):
     LOGGER.info(f'After deleting {username}: {get_developers()}')
 
 def is_developer(ctx):
-    devs = get_developers()
-    return ctx.message.author.name in devs
+    return ctx.message.author.name in get_developers()
 
 def is_owner(ctx):
     return ctx.message.author.name == '101prairiedogs'
