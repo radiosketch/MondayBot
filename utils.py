@@ -17,7 +17,7 @@ formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)-8s] %(message)s', 
 screen_handler = logging.StreamHandler(stream=sys.stdout)
 screen_handler.setFormatter(formatter)
 LOGGER.addHandler(screen_handler)
-file_handler = logging.FileHandler(f'logs/created.log')
+file_handler = logging.FileHandler(new_filepath)
 file_handler.setFormatter(formatter)
 LOGGER.addHandler(file_handler)
 LOGGER.removeHandler(LOGGER.handlers[0])
