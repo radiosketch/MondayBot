@@ -132,7 +132,7 @@ if __name__ == '__main__':
             if channel.name == 'general' or channel.name == 'el-general':
                 mondays = BOT.get_cog('Mondays')
                 if mondays:
-                    await mondays.set_general(channel)
+                    await mondays.add_general(channel)
 
     BOT.add_cog(Developer(BOT, LOGGER))
     BOT.load_extension('cogs')
