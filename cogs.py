@@ -56,12 +56,13 @@ class Mondays(commands.Cog):
         self.logger.info('Started test_crontab')
         
 
-    async def set_general(self, channel):
-        self.general = channel
+    async def add_general(self, channel):
+        self.general.append(channel)
         self.logger.info(f'Set #general: {self.general}')
 
     async def send(self, **kwargs):
-        await self.general.send(**kwargs)
+        for general in self.general:
+            await general.send(**kwargs)
 
     @commands.command()
     async def garf(self, ctx):
