@@ -23,7 +23,7 @@ class Mondays(commands.Cog):
     def __init__(self, bot: commands.Bot, logger):
         self.bot = bot
         self.logger = logger
-        self.general = None
+        self.general = []
         self.logger.info('Mondays Cog is initialized')
 
         @aiocron.crontab('30 7 * * 1')
