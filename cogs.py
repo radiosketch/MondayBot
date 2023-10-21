@@ -33,7 +33,7 @@ class Mondays(commands.Cog):
             is_super = utils.is_super_monday()
             
             utils.save_garf('back on the work site no more nagging wife')
-            await self.send(file='output.jpg')
+            await self.send(file=File('output.jpg'))
 
             if is_joke:
                 self.logger.info('It\'s a Joke Monday')
@@ -52,6 +52,8 @@ class Mondays(commands.Cog):
         @aiocron.crontab('* * * * *')
         async def test_crontab():
             self.logger.info('This was run by aiocron')
+            save_garf('back on the aiocron no more nagging basedad')
+            await self.send(file=File('output.jpg'))
         test_crontab.start()
         self.logger.info('Started test_crontab')
         
