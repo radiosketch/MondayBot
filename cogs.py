@@ -22,10 +22,38 @@ class Mondays(commands.Cog):
     def __init__(self, bot: commands.Bot, logger):
         self.bot = bot
         self.logger = logger
-        self.just_started = True
-        self.check_date.start()
         self.general = None
         self.logger.info('Mondays Cog is initialized')
+
+        @aiocron.crontab('30 7 * * 1')
+        async def on_monday():
+            self.logger.info('It\'s Monday!')
+            is_joke = utils.is_joke_monday()
+            is_super = utils.is_super_monday()
+            
+            utils.save_garf('back on the work site no more nagging wife')
+            await self.send(file='output.jpg')
+
+            if is_joke:
+                self.logger.info('It\'s a Joke Monday')
+                # TODO
+            else:
+                self.logger.info('It\'s not a Joke Monday')
+
+            if is_super:
+                self.logger.info('It\'s a Super Monday!')
+                # TODO
+            else:
+                self.logger.info('It\'s not a Super Monday')
+        on_monday.start()
+        self.logger.info('Started on_monday crontab')
+
+        @aiocron.crontab('* * * * *')
+        async def test_crontab():
+            self.logger.info('This was run by aiocron')
+        test_crontab.start()
+        self.logger.info('Started test_crontab')
+        
 
     async def set_general(self, channel):
         self.general = channel
@@ -60,34 +88,6 @@ class Mondays(commands.Cog):
         super_monday = utils.generate_next_super_monday()
         save_garf(f'''{"It's Monday!" if utils.is_real_monday() else f"The next Monday is {real_monday.strftime('%m/%d/%Y')}, in {utils.plural_days(days_to_real_monday)}, "}\n{"and it's also a Super Monday!" if utils.is_super_monday() else f"and the next Super Monday is {super_monday.strftime('%m/%d/%Y')}, in {(super_monday - utils.get_now()).days} days"}\n''', align='left')
         await ctx.send(file=File('output.jpg'))
-        
-    @tasks.loop(minutes=30)
-    async def check_date(self):
-        now = utils.datetime.now()
-        self.logger.info(f'The current time is {now.time()}')
-        if now.hour != 7 or not now.minute > 30:
-            # Return if the time is not 7:30am - 7:59am
-            self.logger.info('Waiting for 7:30am...')
-            return
-        is_real_monday = utils.is_real_monday()
-        self.logger.info(f'Today {"is" if is_real_monday else "is not"} a real Monday')
-        if is_real_monday:
-            save_garf('back on the work site no more nagging wife')
-            self.send(file=File('output.jpg'))
-        is_joke_monday = utils.is_joke_monday()
-        self.logger.info(f'Today {"is" if is_joke_monday else "is not"} a joke Monday')
-        if is_joke_monday:
-            save_garf('back on the work site wife died of 57 bullets to the chest')
-            self.send(file=File('output.jpg'))
-        is_super_monday = utils.is_super_monday()
-        self.logger.info(f'Today {"is" if is_super_monday else "is not"} a super Monday')
-        if is_super_monday:
-            save_garf('It\'s a motha fuckin SUPA MONDAY lets GOOOO BABEEEE')
-            self.send(file=File('output.jpg'))
-
-    @check_date.before_loop
-    async def before_check_date(self):
-        await self.bot.wait_until_ready()
 
     def cog_unload(self):
         self.check_date.cancel()
