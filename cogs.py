@@ -33,7 +33,7 @@ class Mondays(commands.Cog):
             is_super = utils.is_super_monday()
             
             utils.save_garf('back on the work site no more nagging wife')
-            await self.send(file=File('output.jpg'))
+            await self.send(file='output.jpg')
 
             if is_joke:
                 self.logger.info('It\'s a Joke Monday')
@@ -49,22 +49,17 @@ class Mondays(commands.Cog):
         on_monday.start()
         self.logger.info('Started on_monday crontab')
 
-        @aiocron.crontab('* * * * *')
-        async def test_crontab():
-            self.logger.info('This was run by aiocron')
-            save_garf('back on the aiocron no more nagging basedad')
-            await self.send(file=File('output.jpg'))
-        test_crontab.start()
-        self.logger.info('Started test_crontab')
-        
-
     async def add_general(self, channel):
         self.general.append(channel)
         self.logger.info(f'Set #general: {self.general}')
 
     async def send(self, **kwargs):
-        for general in self.general:
-            await general.send(**kwargs)
+        try:
+            with open(kwargs['file'], 'rb') as f:
+                for general in self.general:
+                    await general.send(file=File(f))
+        except KeyError as e:
+            print(f'KeyError in Mondays.send: {e}')
 
     @commands.command()
     async def garf(self, ctx):
