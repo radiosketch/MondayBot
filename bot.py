@@ -127,7 +127,7 @@ class Developer(commands.Cog):
         <filepath> Download a source file
         '''
         filepath = ctx.message.content[10:]
-        denied = ['.', '..', 'bin', 'dev', 'home', 'initrd' 'lost+found', 'mnt', 'proc', 'run', 'tmp', 'var', 'boot', 'etc', 'lib', 'media', 'opt', 'root', 'sbin', 'sys', 'usr', 'vmlinuz']
+        denied = ['.', '..', 'bin', 'dev', 'home', 'initrd' 'lost+found', 'mnt', 'proc', 'run', 'tmp', 'var', 'boot', 'etc', 'lib', 'media', 'opt', 'root', 'sbin', 'sys', 'usr', 'vmlinuz', 'venv']
         for elem in denied:
             if filepath.startswith(elem):
                 await ctx.send('Denied.')
