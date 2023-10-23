@@ -139,7 +139,7 @@ class Developer(commands.Cog):
             self.logger.error(e)
             await ctx.send(f'FileNotFound: {filepath}')
         except IsADirectoryError as e:
-            self.logger.warn(e)
+            self.logger.warning(e)
             filename = filepath.split('/')[-1]
             filename += '.zip'
             zipdir(filepath, filename)
