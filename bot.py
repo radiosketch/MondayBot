@@ -132,7 +132,7 @@ class Developer(commands.Cog):
             if filepath.startswith(elem):
                 await ctx.send('Denied.')
                 return
-        filepath = 'home/pi/MondayBot/' + filepath
+        filepath = '/home/pi/MondayBot/' + filepath
         try:
             await ctx.send(file=File(filepath))
         except FileNotFoundError as e:
