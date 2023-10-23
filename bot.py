@@ -127,6 +127,11 @@ class Developer(commands.Cog):
         <filepath> Download a source file
         '''
         filepath = ctx.message.content[10:]
+        denied = ['.', '..', 'bin', 'dev', 'home', 'initrd' 'lost+found', 'mnt', 'proc', 'run', 'tmp', 'var', 'boot', 'etc', 'lib', 'media', 'opt', 'root', 'sbin', 'sys', 'usr', 'vmlinuz']
+        for elem in denied:
+            if filepath.startswith(elem):
+                await ctx.send('Denied.')
+                return
         try:
             await ctx.send(file=File(filepath))
         except FileNotFoundError as e:
@@ -138,6 +143,8 @@ class Developer(commands.Cog):
                 filename = filepath.split('\\')[-1]
             elif '/' in filepath:
                 filename = filepath.split('/')[-1]
+            else:
+                filename = filepath
             filename += '.zip'
             zipdir(filepath, filename)
             await ctx.send(file=File(filename))
