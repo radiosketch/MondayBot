@@ -32,7 +32,7 @@ class Mondays(commands.Cog):
             is_joke = utils.is_joke_monday()
             is_super = utils.is_super_monday()
             
-            utils.save_garf('back on the work site no more nagging wife')
+            save_garf('back on the work site no more nagging wife')
             await self.send(file='output.jpg')
 
             if is_joke:
@@ -49,14 +49,22 @@ class Mondays(commands.Cog):
         on_monday.start()
         self.logger.info('Started on_monday crontab')
 
+        # @aiocron.crontab('* * * * *')
+        # async def test():
+        #     self.logger.info('Testing aiocrontab')
+        #     save_garf('back on the work site no more nagging wife')
+        #     await self.send(file='output.jpg')
+        # test.start()
+        # self.logger.info('Started test crontab')
+
     async def add_general(self, channel):
         self.general.append(channel)
-        self.logger.info(f'Set #general: {self.general}')
+        self.logger.info(f'Added #general: {channel}')
 
     async def send(self, **kwargs):
         try:
-            with open(kwargs['file'], 'rb') as f:
-                for general in self.general:
+            for general in self.general:
+                with open(kwargs['file'], 'rb') as f:
                     await general.send(file=File(f))
         except KeyError as e:
             print(f'KeyError in Mondays.send: {e}')
