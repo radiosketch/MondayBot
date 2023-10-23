@@ -126,12 +126,13 @@ class Developer(commands.Cog):
         '''
         <filepath> Download a source file
         '''
-        filepath = ctx.message.content[10:]
-        denied = ['.', '..', 'bin', 'dev', 'home', 'initrd' 'lost+found', 'mnt', 'proc', 'run', 'tmp', 'var', 'boot', 'etc', 'lib', 'media', 'opt', 'root', 'sbin', 'sys', 'usr', 'vmlinuz', 'venv']
+        filepath = ctx.message.content[10:].replace('\\', '/')
+        denied = ['.', '..']
         for elem in denied:
             if filepath.startswith(elem):
                 await ctx.send('Denied.')
                 return
+        filepath = 'home/pi/MondayBot/' + filepath
         try:
             await ctx.send(file=File(filepath))
         except FileNotFoundError as e:
@@ -139,12 +140,7 @@ class Developer(commands.Cog):
             await ctx.send(f'FileNotFound: {filepath}')
         except IsADirectoryError as e:
             self.logger.warn(e)
-            if '\\' in filepath:
-                filename = filepath.split('\\')[-1]
-            elif '/' in filepath:
-                filename = filepath.split('/')[-1]
-            else:
-                filename = filepath
+            filename = filepath.split('/')[-1]
             filename += '.zip'
             zipdir(filepath, filename)
             await ctx.send(file=File(filename))
