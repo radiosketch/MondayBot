@@ -118,7 +118,6 @@ def whitelist_exists(ctx):
 def get_developers():
     with open('whitelist.txt', 'r') as f:
         devs = [line[:-1] for line in f.readlines()]
-        LOGGER.info(f'Current developers: {devs}')
         return devs
 
 def add_developer(username):
@@ -136,6 +135,7 @@ def remove_developer(username):
     LOGGER.info(f'After deleting {username}: {get_developers()}')
 
 def is_developer(ctx):
+    LOGGER.info(f'Developer check for {ctx.message.author.name}')
     return ctx.message.author.name in get_developers()
 
 def is_owner(ctx):
