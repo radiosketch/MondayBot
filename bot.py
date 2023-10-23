@@ -4,7 +4,7 @@ import subprocess
 
 from discord import Game, File
 from discord.ext import commands, tasks
-from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log
+from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log, zipdir
 
 
 class Developer(commands.Cog):
@@ -128,10 +128,21 @@ class Developer(commands.Cog):
         '''
         filepath = ctx.message.content[10:]
         try:
-            await ctx.send(File(filepath))
+            await ctx.send(file=File(filepath))
         except FileNotFoundError as e:
             self.logger.error(e)
             await ctx.send(f'FileNotFound: {filepath}')
+        except IsADirectoryError as e:
+            self.logger.warn(e)
+            if '\\' in filepath:
+                filename = filepath.split('\\')[-1]
+            elif '/' in filepath:
+                filename = filepath.split('/')[-1]
+            filename += '.zip'
+            zipdir(filepath, filename)
+            await ctx.send(file=File(filename))
+            os.remove(filename)
+
 
 
 if __name__ == '__main__':
