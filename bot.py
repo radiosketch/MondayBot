@@ -120,6 +120,19 @@ class Developer(commands.Cog):
             self.logger.error(e)
             await ctx.send(f'```bash\n$ bash\n{e}```')
 
+    @commands.command()
+    @commands.check(is_developer)
+    async def download(self, ctx):
+        '''
+        <filepath> Download a source file
+        '''
+        filepath = ctx.message.content[10:]
+        try:
+            await ctx.send(File(filepath))
+        except FileNotFoundError as e:
+            self.logger.error(e)
+            await ctx.send(f'FileNotFound: {filepath}')
+
 
 if __name__ == '__main__':
     BOT = commands.Bot(command_prefix="!")
