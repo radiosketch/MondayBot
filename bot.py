@@ -104,12 +104,13 @@ class Developer(commands.Cog):
         await ctx.send(f'```py\n# whitelist.txt\n{result}```')
 
 
+    '''
     @commands.command()
     @commands.check(is_developer)
     async def bash(self, ctx):
-        '''
-        Access the host terminal
-        '''
+        
+        # Access the host terminal
+        
         command = ctx.message.content[6:].split(' ')
         self.logger.info(f'Executing {command}')
         try:
@@ -119,6 +120,7 @@ class Developer(commands.Cog):
         except Exception as e:
             self.logger.error(e)
             await ctx.send(f'```bash\n$ bash\n{e}```')
+    '''
 
     @commands.command()
     @commands.check(is_developer)
