@@ -58,7 +58,7 @@ def get_log(oldest=False):
     Get the newest (default) or oldest file in the log folder
     '''
     search_file = 'January 1st 3000.log' if oldest else 'January 1st 1970.log'
-    LOGGER.info(f'Starting the search at {search_file}')
+    # LOGGER.info(f'Starting the search at {search_file}')
     for dirname, _, filenames in os.walk('logs'):
         for file in filenames:
             filepath = os.path.join(dirname, file)
@@ -66,7 +66,7 @@ def get_log(oldest=False):
                 if oldest:
                     continue
                 return filepath
-            LOGGER.info(f'Comparing {search_file} and {file}')
+            # LOGGER.info(f'Comparing {search_file} and {file}')
             search_file_date = parse_log_name(search_file)
             file_date = parse_log_name(file)
             if search_file_date > file_date:
@@ -77,7 +77,7 @@ def get_log_folder_memory_usage(max_mem=.75 * 10**6):
     cur_mem = 0
     for dirpath, _, filenames in os.walk('logs'):
         for file in filenames:
-            LOGGER.info(f'Checking {file}')
+            # LOGGER.info(f'Checking {file}')
             cur_mem += os.stat(os.path.join(dirpath, file)).st_size
     return (cur_mem / max_mem) * 100
 
