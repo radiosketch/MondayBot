@@ -124,11 +124,25 @@ class Developer(commands.Cog):
 
     @commands.command()
     @commands.check(is_developer)
+    async def ls(self, ctx):
+        '''
+        <directory> Lists source directories and files
+        '''
+        # TODO THIS IS A DEBUG STATEMENT
+        await ctx.send(ctx.message.content)
+        await ctx.send(ctx.message.content[4:])
+
+    @commands.command()
+    @commands.check(is_developer)
     async def download(self, ctx):
         '''
         <filepath> Download a source file
         '''
+        # TODO perform strict checks on user inputs
+        # input string MUST be a valid filepath
         filepath = ctx.message.content[10:].replace('\\', '/')
+        if filepath.startswith('/'):
+            filepath = filepath[1:]
         denied = ['.', '..']
         for elem in denied:
             if filepath.startswith(elem):
@@ -142,7 +156,7 @@ class Developer(commands.Cog):
             await ctx.send(f'FileNotFound: {filepath}')
         except IsADirectoryError as e:
             self.logger.warning(e)
-            filename = filepath.split('/')[-1]
+            filename = filepath.replace('/', '-')
             filename += '.zip'
             zipdir(filepath, filename)
             await ctx.send(file=File(filename))
