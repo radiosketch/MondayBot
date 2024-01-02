@@ -140,7 +140,7 @@ class Developer(commands.Cog):
                 return
         directory = '/home/pi/MondayBot/' + directory
         try:
-            result = str(subprocess.check_output('ls -a {directory}', stderr=subprocess.STDOUT), encoding='utf-8')
+            result = str(subprocess.check_output(f'ls -a {directory}', stderr=subprocess.STDOUT), encoding='utf-8')
             self.logger.info(f'!ls used on {directory}')
             await ctx.send(f'```bash\n{result}```')
         except Exception as e:
