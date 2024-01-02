@@ -128,9 +128,25 @@ class Developer(commands.Cog):
         '''
         <directory> Lists source directories and files
         '''
-        # TODO THIS IS A DEBUG STATEMENT
-        await ctx.send(ctx.message.content)
-        await ctx.send(ctx.message.content[4:])
+        # TODO perform strict checks on user inputs
+        # input string MUST be a valid filepath
+        directory = ctx.message.content[4:].split(' ')[0].replace('\\', '/')
+        if directory.startswith('/'):
+            directory = directory[1:]
+        denied = ['.', '..']
+        for elem in denied:
+            if directory.startswith(elem):
+                await ctx.send('Denied.')
+                return
+        directory = '/home/pi/MondayBot/' + directory
+        try:
+            result = str(subprocess.check_output('ls -a {directory}', stderr=subprocess.STDOUT), encoding='utf-8')
+            self.logger.info(f'!ls used on {directory}')
+            await ctx.send(f'```bash\n{result}```')
+        except Exception as e:
+            self.logger.error(e)
+            await ctx.send(f'```bash{e}```')
+        
 
     @commands.command()
     @commands.check(is_developer)
@@ -140,7 +156,7 @@ class Developer(commands.Cog):
         '''
         # TODO perform strict checks on user inputs
         # input string MUST be a valid filepath
-        filepath = ctx.message.content[10:].replace('\\', '/')
+        filepath = ctx.message.content[10:].split(' ')[0].replace('\\', '/')
         if filepath.startswith('/'):
             filepath = filepath[1:]
         denied = ['.', '..']
