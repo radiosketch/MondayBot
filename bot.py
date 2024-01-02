@@ -138,7 +138,10 @@ class Developer(commands.Cog):
             if directory.startswith(elem):
                 await ctx.send('Denied.')
                 return
-        directory = '/home/pi/MondayBot/' + directory
+        if directory != '':
+            directory = '/home/pi/MondayBot/' + directory
+        else:
+            directory = '/home/pi/MondayBot'
         try:
             result = str(subprocess.check_output(f'ls -a {directory}', stderr=subprocess.STDOUT), encoding='utf-8')
             self.logger.info(f'!ls used on {directory}')
