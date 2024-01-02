@@ -4,7 +4,7 @@ import subprocess
 
 from discord import Game, File
 from discord.ext import commands, tasks
-from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log, zipdir
+from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log, zipdir, filter_user_input_as_filepath
 
 
 class Developer(commands.Cog):
@@ -104,24 +104,6 @@ class Developer(commands.Cog):
         await ctx.send(f'```py\n# whitelist.txt\n{result}```')
 
 
-    '''
-    @commands.command()
-    @commands.check(is_developer)
-    async def bash(self, ctx):
-        
-        # Access the host terminal
-        
-        command = ctx.message.content[6:].split(' ')
-        self.logger.info(f'Executing {command}')
-        try:
-            result = str(subprocess.check_output(command, stderr=subprocess.STDOUT), encoding='utf-8')
-            self.logger.info(f'\n$ bash\n{result}')
-            await ctx.send(f'```bash\n$ bash\n{result}```')
-        except Exception as e:
-            self.logger.error(e)
-            await ctx.send(f'```bash\n$ bash\n{e}```')
-    '''
-
     @commands.command()
     @commands.check(is_developer)
     async def ls(self, ctx):
@@ -130,25 +112,17 @@ class Developer(commands.Cog):
         '''
         # TODO perform strict checks on user inputs
         # input string MUST be a valid filepath
-        directory = ctx.message.content[4:].split(' ')[0].replace('\\', '/')
-        if directory.startswith('/'):
-            directory = directory[1:]
-        denied = ['.', '..']
-        for elem in denied:
-            if directory.startswith(elem):
-                await ctx.send('Denied.')
-                return
-        if directory != '':
-            directory = '/home/pi/MondayBot/' + directory
-        else:
-            directory = '/home/pi/MondayBot'
+        directory = filter_user_input_as_filepath(ctx.message.content[4:])
+        if not directory:
+            await ctx.send('Invalid input. The string must not contain spaces or \'..\'')
+            return
         try:
-            result = str(subprocess.check_output(f'ls -a {directory}', stderr=subprocess.STDOUT), encoding='utf-8')
+            result = str(subprocess.check_output(['ls', '-a', directory], stderr=subprocess.STDOUT), encoding='utf-8')
             self.logger.info(f'!ls used on {directory}')
-            await ctx.send(f'```bash\n{result}```')
+            await ctx.send(f'```{result}```')
         except Exception as e:
             self.logger.error(e)
-            await ctx.send(f'```bash{e}```')
+            await ctx.send(f'```{e}```')
         
 
     @commands.command()
@@ -159,15 +133,10 @@ class Developer(commands.Cog):
         '''
         # TODO perform strict checks on user inputs
         # input string MUST be a valid filepath
-        filepath = ctx.message.content[10:].split(' ')[0].replace('\\', '/')
-        if filepath.startswith('/'):
-            filepath = filepath[1:]
-        denied = ['.', '..']
-        for elem in denied:
-            if filepath.startswith(elem):
-                await ctx.send('Denied.')
-                return
-        filepath = '/home/pi/MondayBot/' + filepath
+        filepath = filter_user_input_as_filepath(ctx.message.content[10:])
+        if not filepath:
+            await ctx.send('Invalid input. The string must not contain spaces or \'..\'')
+            return
         try:
             await ctx.send(file=File(filepath))
         except FileNotFoundError as e:
@@ -175,7 +144,9 @@ class Developer(commands.Cog):
             await ctx.send(f'FileNotFound: {filepath}')
         except IsADirectoryError as e:
             self.logger.warning(e)
-            filename = filepath.replace('/', '-')
+            self.logger.info(f'Zipping directory: {filepath}...')
+            await ctx.send('Zipping directory, please wait.')
+            filename = filepath.replace('/', '')
             filename += '.zip'
             zipdir(filepath, filename)
             await ctx.send(file=File(filename))

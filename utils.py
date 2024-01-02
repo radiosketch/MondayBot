@@ -11,6 +11,7 @@ from dateutil import parser
 
 new_filepath = 'logs/new.log'
 recent_filepath = 'logs/recent.log'
+home_filepath = '/home/pi/MondayBot'
 
 LOGGER = logging.getLogger('discord')
 LOGGER.setLevel(logging.DEBUG)
@@ -89,6 +90,18 @@ def zipdir(path, name):
         for dirpath, _, filenames in os.walk(path):
             for file in filenames:
                 zipf.write(os.path.join(dirpath, file), '.')
+
+def filter_user_input_as_filepath(string):
+    string = string.split(' ')[0].replace('\\', '/')
+    if string.startswith('/'):
+        string = string[1:]
+    if string != '':
+        string = home_filepath + '/' + string
+    else:
+        string = home_filepath
+    if '..' in string:
+        return None
+    return string 
 
 def get_token():
     return base64.b64decode(Fernet(open('key.txt', 'rb').read()).decrypt(open('encoded.txt', 'rb').read())).decode()
