@@ -144,7 +144,7 @@ class Developer(commands.Cog):
             await ctx.send(f'FileNotFound: {filepath}')
         except IsADirectoryError as e:
             self.logger.warning(e)
-            await ctx.send('Cannot download entire directories. Check out the my GitHub!\nhttps://github.com/radiosketch/MondayBot')
+            await ctx.send('Cannot download entire directories. Check out my GitHub!\nhttps://github.com/radiosketch/MondayBot')
 
 
 
