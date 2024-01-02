@@ -1,7 +1,6 @@
 import os
 import sys
 import logging
-import zipfile
 
 import base64
 from cryptography.fernet import Fernet
@@ -84,12 +83,6 @@ def get_log_folder_memory_usage(max_mem=.75 * 10**6):
 
 def delete_oldest_log():
     os.remove(get_log(oldest=True))
-
-def zipdir(path, name):
-    with zipfile.ZipFile(name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for dirpath, _, filenames in os.walk(path):
-            for file in filenames:
-                zipf.write(os.path.join(dirpath, file), '.')
 
 def filter_user_input_as_filepath(string):
     string = string.split(' ')[0].replace('\\', '/')

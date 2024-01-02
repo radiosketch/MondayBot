@@ -4,7 +4,7 @@ import subprocess
 
 from discord import Game, File
 from discord.ext import commands, tasks
-from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log, zipdir, filter_user_input_as_filepath
+from utils import LOGGER, get_token, is_owner, is_developer, whitelist_exists, add_developer, remove_developer, rotate_log, get_log, get_log_folder_memory_usage, delete_oldest_log, filter_user_input_as_filepath
 
 
 class Developer(commands.Cog):
@@ -144,13 +144,7 @@ class Developer(commands.Cog):
             await ctx.send(f'FileNotFound: {filepath}')
         except IsADirectoryError as e:
             self.logger.warning(e)
-            self.logger.info(f'Zipping directory: {filepath}...')
-            await ctx.send('Zipping directory, please wait.')
-            filename = filepath.replace('/', '')
-            filename += '.zip'
-            zipdir(filepath, filename)
-            await ctx.send(file=File(filename))
-            os.remove(filename)
+            await ctx.send('Cannot download entire directories. Check out the my GitHub!\nhttps://github.com/radiosketch/MondayBot')
 
 
 
